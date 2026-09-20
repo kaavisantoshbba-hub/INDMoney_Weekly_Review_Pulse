@@ -1,0 +1,88 @@
+{
+  "reviewCount": 1323,
+  "googlePlay": 1195,
+  "appStore": 128,
+  "columns": 5,
+  "dateStart": "2026-06-27",
+  "dateEnd": "2026-09-18",
+  "fingerprint": "b6697fb792a655837aaf3a83a28439ca595fd2824c44e00c4175c66868254b29",
+  "themes": [
+    {
+      "name": "App Performance & UX",
+      "reviews": 272,
+      "share": 20.6
+    },
+    {
+      "name": "Investing, Trading & Portfolio",
+      "reviews": 207,
+      "share": 15.6
+    },
+    {
+      "name": "Money Movement & Payments",
+      "reviews": 105,
+      "share": 7.9
+    },
+    {
+      "name": "Support, Account & Verification",
+      "reviews": 103,
+      "share": 7.8
+    },
+    {
+      "name": "Features, Charges & Offers",
+      "reviews": 71,
+      "share": 5.4
+    }
+  ],
+  "unclassified": {
+    "reviews": 565,
+    "share": 42.7
+  },
+  "quotes": [
+    {
+      "id": "q_perf_dashboard",
+      "theme": "App Performance & UX",
+      "text": "dashboards are not clear,"
+    },
+    {
+      "id": "q_invest_notify",
+      "theme": "Investing, Trading & Portfolio",
+      "text": "Stock trade executed notification ( push notifications) not working at all. After many complaints and calls also no improvement. i get all other useless push notifications, but not trade executed notification, which is THE most important for a trader. US stock deposite process fails most of the time. also interface of portfolio and trading needs to improve a lot. kindly look in notification issue"
+    },
+    {
+      "id": "q_money_banks",
+      "theme": "Money Movement & Payments",
+      "text": "Cannot use any bank to transfer other than 5 listed by them. There's no way I'm gonna create new bank accounts just to trade."
+    }
+  ],
+  "actions": [
+    {
+      "title": "Improve dashboard clarity.",
+      "detail": "Audit high-friction dashboard flows and validate simpler information hierarchy and navigation with users."
+    },
+    {
+      "title": "Improve trade-notification reliability.",
+      "detail": "Audit the trade-execution notification flow, identify delivery failures, and track successful notification delivery."
+    },
+    {
+      "title": "Reduce transfer friction.",
+      "detail": "Analyze unsupported-bank demand and improve the transfer experience for users affected by bank-coverage limitations."
+    }
+  ],
+  "themeSummaries": [
+    {
+      "theme": "App Performance & UX",
+      "summary": "Users flag unclear dashboards and friction in everyday navigation, making core screens harder to scan and use."
+    },
+    {
+      "theme": "Investing, Trading & Portfolio",
+      "summary": "Traders report missing trade-execution alerts, unreliable US deposits, and portfolio screens that still need work."
+    },
+    {
+      "theme": "Money Movement & Payments",
+      "summary": "Transfers are limited to a short list of banks, leaving some users unable to move money without opening new accounts."
+    }
+  ],
+  "methodology": "Public review exports from Google Play and the App Store were combined for the 12-week period. Reviews were grouped into a maximum of five themes. Generic or insufficiently detailed reviews were not forced into a theme. No usernames, emails, IDs, or other PII are included in this pulse.",
+  "emailSubject": "INDMoney Weekly Review Pulse: 27 June – 18 September 2026",
+  "emailBody": "Hi team,\n\nSharing the INDMoney Weekly Review Pulse, based on public App Store and Google Play reviews from 27 June – 18 September 2026. We analyzed 1,323 reviews in total. The top three themes, user quotes, and recommended actions are summarized below.\n\nTOP 3 THEMES\n\n• App Performance & UX — 272 reviews · 20.6%\n• Investing, Trading & Portfolio — 207 reviews · 15.6%\n• Money Movement & Payments — 105 reviews · 7.9%\n\nREAL USER VOICE\n\n• “dashboards are not clear,”\n\n• “Stock trade executed notification ( push notifications) not working at all. After many complaints and calls also no improvement. i get all other useless push notifications, but not trade executed notification, which is THE most important for a trader. US stock deposite process fails most of the time. also interface of portfolio and trading needs to improve a lot. kindly look in notification issue”\n\n• “Cannot use any bank to transfer other than 5 listed by them. There's no way I'm gonna create new bank accounts just to trade.”\n\nRECOMMENDED ACTIONS\n\n1. Improve dashboard clarity. Audit high-friction dashboard flows and validate simpler information hierarchy and navigation with users.\n\n2. Improve trade-notification reliability. Audit the trade-execution notification flow, identify delivery failures, and track successful notification delivery.\n\n3. Reduce transfer friction. Analyze unsupported-bank demand and improve the transfer experience for users affected by bank-coverage limitations.\n\nMethodology: Public review exports from Google Play and the App Store were combined for the 12-week period. Reviews were grouped into a maximum of five themes. Generic or insufficiently detailed reviews were not forced into a theme. No usernames, emails, IDs, or other PII are included in this pulse.\nSource dataset: INDMoney review export used for Challenge 5 analysis.\n\nPlease reply with any questions or feedback.\n\nBest regards,\nKavya\n"
+}

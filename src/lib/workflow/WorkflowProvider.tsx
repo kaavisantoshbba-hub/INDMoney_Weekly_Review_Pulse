@@ -14,6 +14,7 @@ import { parseReviewsCsv, parseReviewsFromFile, BUNDLED_DATASET_NAME } from "@/l
 import { applyAiAssignments, applyRuleBasedGrouping, applyValidatedGrouping } from "@/lib/grouping/group";
 import { emailFileText, emailFromNote } from "@/lib/email";
 import { measureNote, noteContainsPii, sourceLabel, verifyNoteQuotes } from "@/lib/note/assemble";
+import { countWords, WORD_LIMIT } from "@/lib/wordcount";
 import { buildTemplateNote, pickEligibleQuotes } from "@/lib/note/template";
 import { buildValidatedNote } from "@/lib/note/validated";
 import validated from "../../../data/reference/validated_current_week.json";
@@ -158,13 +159,105 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-function finaliseNote(note: WeeklyNote, reviews: string[]): WeeklyNote {
-  const verified = verifyNoteQuotes(note, reviews);
-  return {
+function trimProse(text: string, maxWords: number): string {
+  const words = text.trim().split(/\\s+/).filter(Boolean);
+  if (words.length <= maxWords) return text;
+  if (maxWords <= 1) return words[0] ?? "";
+  return `${words.slice(0, maxWords).join(" ").replace(/[.,;:!?]+$/, "")}…`;
+}
+
+function fitNoteToWordLimit(note: WeeklyNote): WeeklyNote {
+  let fitted: WeeklyNote = {
     ...note,
-    wordCount: measureNote(note),
+    themes: note.themes.map((theme) => ({ ...theme })),
+    quotes: note.quotes.map((quote) => ({ ...quote })),
+    actions: note.actions.map((action) => ({ ...action })),
+  };
+
+  const methodologyFallback =
+    "Public Google Play and App Store reviews were combined for this look-back window. Reviews were grouped into up to five themes. Quotes were verified against imported reviews. No PII is included.";
+
+  if (measureNote(fitted) > WORD_LIMIT) {
+    fitted = {
+      ...fitted,
+      methodology: methodologyFallback,
+    };
+  }
+
+  const fields: Array<{
+    get: () => string;
+    set: (value: string) => void;
+    minWords: number;
+  }> = [
+    {
+      get: () => fitted.methodology,
+      set: (value) => {
+        fitted = { ...fitted, methodology: value };
+      },
+      minWords: 8,
+    },
+    ...fitted.themes.map((_, index) => ({
+      get: () => fitted.themes[index]?.summary ?? "",
+      set: (value: string) => {
+        fitted = {
+          ...fitted,
+          themes: fitted.themes.map((theme, i) =>
+            i === index ? { ...theme, summary: value } : theme,
+          ),
+        };
+      },
+      minWords: 8,
+    })),
+    ...fitted.actions.map((_, index) => ({
+      get: () => fitted.actions[index]?.detail ?? "",
+      set: (value: string) => {
+        fitted = {
+          ...fitted,
+          actions: fitted.actions.map((action, i) =>
+            i === index ? { ...action, detail: value } : action,
+          ),
+        };
+      },
+      minWords: 6,
+    })),
+  ];
+
+  while (measureNote(fitted) > WORD_LIMIT) {
+    const excess = measureNote(fitted) - WORD_LIMIT;
+
+    let candidate = fields
+      .map((field) => ({
+        field,
+        words: countWords(field.get()),
+      }))
+      .filter(({ field, words }) => words > field.minWords)
+      .sort((a, b) => b.words - a.words)[0];
+
+    if (!candidate) break;
+
+    const remove = Math.min(
+      Math.max(1, excess),
+      Math.max(1, candidate.words - candidate.field.minWords),
+      12,
+    );
+
+    candidate.field.set(
+      trimProse(candidate.field.get(), candidate.words - remove),
+    );
+  }
+
+  return fitted;
+}
+
+function finaliseNote(note: WeeklyNote, reviews: string[]): WeeklyNote {
+  const fitted = fitNoteToWordLimit(note);
+  const verified = verifyNoteQuotes(fitted, reviews);
+
+  return {
+    ...fitted,
+    wordCount: measureNote(fitted),
     quotesVerified: verified.ok,
-    piiClear: !noteContainsPii(note),
+    piiClear: !noteContainsPii(fitted),
   };
 }
 

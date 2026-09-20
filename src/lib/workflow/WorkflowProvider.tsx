@@ -171,7 +171,7 @@ function fitNoteToWordLimit(note: WeeklyNote): WeeklyNote {
 
   // Quotes are source-verified user language and must not be rewritten.
   // Reduce only generated prose until the complete rendered note is <= 250 words.
-  let fitted: WeeklyNote = {
+  const fitted: WeeklyNote = {
     ...note,
     themes: note.themes.map((theme) => ({ ...theme })),
     quotes: note.quotes.map((quote) => ({ ...quote })),

@@ -159,14 +159,18 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-function trimProse(text: string, maxWords: number): string {
-  const words = text.trim().split(/\\s+/).filter(Boolean);
-  if (words.length <= maxWords) return text;
-  if (maxWords <= 1) return words[0] ?? "";
-  return `${words.slice(0, maxWords).join(" ").replace(/[.,;:!?]+$/, "")}…`;
+function truncateWords(text: string, maxWords: number): string {
+  if (maxWords <= 0) return "";
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return text.trim();
+  return `${words.slice(0, maxWords).join(" ")}…`;
 }
 
 function fitNoteToWordLimit(note: WeeklyNote): WeeklyNote {
+  if (measureNote(note) <= WORD_LIMIT) return note;
+
+  // Quotes are source-verified user language and must not be rewritten.
+  // Reduce only generated prose until the complete rendered note is <= 250 words.
   let fitted: WeeklyNote = {
     ...note,
     themes: note.themes.map((theme) => ({ ...theme })),
@@ -174,76 +178,51 @@ function fitNoteToWordLimit(note: WeeklyNote): WeeklyNote {
     actions: note.actions.map((action) => ({ ...action })),
   };
 
-  const methodologyFallback =
-    "Public Google Play and App Store reviews were combined for this look-back window. Reviews were grouped into up to five themes. Quotes were verified against imported reviews. No PII is included.";
-
-  if (measureNote(fitted) > WORD_LIMIT) {
-    fitted = {
-      ...fitted,
-      methodology: methodologyFallback,
-    };
-  }
-
-  const fields: Array<{
-    get: () => string;
-    set: (value: string) => void;
-    minWords: number;
-  }> = [
+  const getProseFields = () => [
+    ...fitted.themes.map((theme, index) => ({
+      kind: "theme" as const,
+      index,
+      text: theme.summary,
+      words: countWords(theme.summary),
+    })),
+    ...fitted.actions.map((action, index) => ({
+      kind: "action" as const,
+      index,
+      text: action.detail,
+      words: countWords(action.detail),
+    })),
     {
-      get: () => fitted.methodology,
-      set: (value) => {
-        fitted = { ...fitted, methodology: value };
-      },
-      minWords: 8,
+      kind: "methodology" as const,
+      index: 0,
+      text: fitted.methodology,
+      words: countWords(fitted.methodology),
     },
-    ...fitted.themes.map((_, index) => ({
-      get: () => fitted.themes[index]?.summary ?? "",
-      set: (value: string) => {
-        fitted = {
-          ...fitted,
-          themes: fitted.themes.map((theme, i) =>
-            i === index ? { ...theme, summary: value } : theme,
-          ),
-        };
-      },
-      minWords: 8,
-    })),
-    ...fitted.actions.map((_, index) => ({
-      get: () => fitted.actions[index]?.detail ?? "",
-      set: (value: string) => {
-        fitted = {
-          ...fitted,
-          actions: fitted.actions.map((action, i) =>
-            i === index ? { ...action, detail: value } : action,
-          ),
-        };
-      },
-      minWords: 6,
-    })),
   ];
 
-  while (measureNote(fitted) > WORD_LIMIT) {
-    const excess = measureNote(fitted) - WORD_LIMIT;
+  // Remove one generated-prose word at a time from the longest prose field.
+  // This is deterministic and guarantees the rendered note, not just the
+  // generated blob, respects the 250-word requirement.
+  for (let i = 0; i < 500 && measureNote(fitted) > WORD_LIMIT; i += 1) {
+    const fields = getProseFields().filter((field) => field.words > 1);
+    if (!fields.length) break;
 
-    let candidate = fields
-      .map((field) => ({
-        field,
-        words: countWords(field.get()),
-      }))
-      .filter(({ field, words }) => words > field.minWords)
-      .sort((a, b) => b.words - a.words)[0];
+    fields.sort((a, b) => b.words - a.words);
+    const field = fields[0];
+    const nextText = truncateWords(field.text, field.words - 1);
 
-    if (!candidate) break;
-
-    const remove = Math.min(
-      Math.max(1, excess),
-      Math.max(1, candidate.words - candidate.field.minWords),
-      12,
-    );
-
-    candidate.field.set(
-      trimProse(candidate.field.get(), candidate.words - remove),
-    );
+    if (field.kind === "theme") {
+      fitted.themes[field.index] = {
+        ...fitted.themes[field.index],
+        summary: nextText,
+      };
+    } else if (field.kind === "action") {
+      fitted.actions[field.index] = {
+        ...fitted.actions[field.index],
+        detail: nextText,
+      };
+    } else {
+      fitted.methodology = nextText;
+    }
   }
 
   return fitted;

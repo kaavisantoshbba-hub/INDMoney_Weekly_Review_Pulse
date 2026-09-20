@@ -429,7 +429,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
             })),
             pinnedQuotes: validatedNote.quotes,
             candidates: [],
-            proseWordBudget: 80,
+            proseWordBudget: 40,
             methodologyBase: validated.methodology,
             mode: "validated_ai",
           }),
@@ -480,7 +480,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
             })),
             candidates,
             pinnedQuotes: [],
-            proseWordBudget: 80,
+            proseWordBudget: 40,
             mode: "full",
           }),
         });
@@ -574,7 +574,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (from === "group" && !state.groupingResult) return;
-      if (from === "generate" && !state.note?.quotesVerified) return;
+      if (from === "generate" && (!state.note?.quotesVerified || state.note.wordCount > WORD_LIMIT)) return;
       const index = STEPS.indexOf(from);
       const next = STEPS[index + 1];
       if (next) goTo(next);
